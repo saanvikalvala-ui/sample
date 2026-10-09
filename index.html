@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ComicAI Studio</title>
+    style.css
+</head>
+<body>
+
+    <!-- Navbar -->
+    <header class="navbar">
+        <div class="logo">ComicAI</div>
+
+        <nav>
+            #Home</a>
+            #Gallery</a>
+            #About</a>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <h1>Create Comics with AI</h1>
+        <p>Turn simple ideas into fully illustrated comic strips.</p>
+    </section>
+
+    <!-- Comic Creator -->
+    <section class="creator-box">
+        <h2>Create Your Comic</h2>
+
+        <textarea
+            id="promptInput"
+            placeholder="Example: A robot discovers magic in a futuristic city..."
+        ></textarea>
+
+        <div class="controls">
+            <select id="styleSelect">
+                <option>Comic Book</option>
+                <option>Manga</option>
+                <option>Cartoon</option>
+                <option>Superhero</option>
+                <option>Sci-Fi</option>
+            </select>
+
+            <select id="panelCount">
+                <option value="4">4 Panels</option>
+                <option value="6">6 Panels</option>
+                <option value="8">8 Panels</option>
+            </select>
+        </div>
+
+        <label class="learning-mode">
+            <input type="checkbox">
+            Educational Comic Mode
+        </label>
+
+        <button id="generateBtn">Generate Comic</button>
+    </section>
+
+    <!-- Character Builder -->
+    <section class="character-builder">
+        <h2>Main Character</h2>
+
+        <input
+            type="text"
+            id="characterName"
+            placeholder="Character Name">
+
+        <textarea
+            id="characterDescription"
+            placeholder="Describe your character..."
+        ></textarea>
+    </section>
+
+    <!-- Comic Output -->
+    <section id="comicSection">
+        <h2>Your Comic</h2>
+
+        <div class="comic-grid"></div>
+    </section>
+
+    <!-- Download Buttons -->
+    <section class="download-section">
+        <button>Download PNG</button>
+        <button>Download PDF</button>
+        <button>Share Comic</button>
+    </section>
+
+    <!-- Community Section -->
+    <section class="community">

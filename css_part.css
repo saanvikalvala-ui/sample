@@ -1,0 +1,182 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: #0f172a;
+    color: white;
+    min-height: 100vh;
+}
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 8%;
+    background: #111827;
+    border-bottom: 1px solid #1f2937;
+}
+
+.logo {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: #60a5fa;
+}
+
+nav {
+    display: flex;
+    gap: 25px;
+}
+
+nav a {
+    color: white;
+    text-decoration: none;
+    transition: 0.3s;
+}
+
+nav a:hover {
+    color: #60a5fa;
+}
+
+.hero {
+    text-align: center;
+    padding: 60px 20px;
+}
+
+.hero h1 {
+    font-size: 3rem;
+    margin-bottom: 15px;
+}
+
+.hero p {
+    color: #94a3b8;
+    font-size: 1.1rem;
+}
+
+.creator-box,
+.character-builder,
+.community,
+.download-section,
+#comicSection {
+    width: 90%;
+    max-width: 1000px;
+    margin: 30px auto;
+    background: #1e293b;
+    padding: 25px;
+    border-radius: 15px;
+}
+
+.creator-box h2,
+.character-builder h2,
+.community h2,
+#comicSection h2 {
+    margin-bottom: 15px;
+}
+
+textarea,
+input,
+select {
+    width: 100%;
+    padding: 12px;
+    margin-top: 10px;
+    margin-bottom: 15px;
+    border: none;
+    outline: none;
+    border-radius: 10px;
+    background: #334155;
+    color: white;
+}
+
+textarea {
+    min-height: 120px;
+    resize: none;
+}
+
+.controls {
+    display: flex;
+    gap: 15px;
+}
+
+button {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 10px;
+    background: #3b82f6;
+    color: white;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+button:hover {
+    background: #2563eb;
+    transform: translateY(-2px);
+}
+
+.learning-mode {
+    display: block;
+    margin-bottom: 20px;
+}
+
+.comic-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.comic-panel {
+    background: white;
+    color: black;
+    border-radius: 12px;
+    overflow: hidden;
+    min-height: 300px;
+    padding: 10px;
+    position: relative;
+}
+
+.comic-panel img {
+    width: 100%;
+    display: block;
+}
+
+.speech {
+    background: white;
+    border: 2px solid black;
+    border-radius: 20px;
+    padding: 10px;
+    margin-top: 10px;
+    font-weight: bold;
+}
+
+.download-section {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+.community-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+}
+
+.community-card {
+    background: #334155;
+    padding: 40px;
+    text-align: center;
+    border-radius: 12px;
+    transition: 0.3s;
+}
+
+.community-card:hover {
+    transform: translateY(-5px);
+}
+
+footer {
+    text-align: center;
+    padding: 25px;
+    color: #94a3b8;
+}
