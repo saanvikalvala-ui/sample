@@ -98,8 +98,10 @@
                     <label class="visually-hidden" for="storyPrompt">Your comic story</label>
                     <textarea id="storyPrompt" name="storyPrompt" rows="4" maxlength="300" required placeholder="A young hero discovers a secret door to another world..."></textarea>
                     <div class="field-foot"><span>Just start with an idea. We’ll take it from there.</span><span id="characterCount">0 / 300</span></div>
+                    <p class="ml-note">Your story stays in this browser. The free AI model downloads once and runs on your device.</p>
+                    <p class="ml-status" id="mlStatus" role="status" aria-live="polite" hidden></p>
                     <div class="create-row">
-                        <button class="create-button" type="submit"><span>Create my comic</span><span aria-hidden="true">➜</span></button>
+                        <button class="create-button" id="generateBtn" type="submit"><span>Create my comic</span><span aria-hidden="true">➜</span></button>
                         <span class="button-spark button-spark-left" aria-hidden="true">✦</span>
                         <span class="button-spark button-spark-right" aria-hidden="true">〰</span>
                     </div>

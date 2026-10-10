@@ -19,6 +19,10 @@ document.addEventListener("DOMContentLoaded", () => {
     let selectedStyle = "Comic Book";
     let selectedCharacterId = "mia";
     let newCharacterNumber = 0;
+    let storyGeneratorPromise;
+    const generateButton = document.getElementById("generateBtn");
+    const generateButtonLabel = generateButton.querySelector("span");
+    const modelStatus = document.getElementById("mlStatus");
 
     const avatarURL = (seed, backgroundColor = "c0dffc") =>
         `https://api.dicebear.com/9.x/avataaars/svg?seed=${encodeURIComponent(seed)}&backgroundColor=${backgroundColor}`;
@@ -48,6 +52,141 @@ document.addEventListener("DOMContentLoaded", () => {
         const displayName = character.name.trim() || "New hero";
         card.querySelector("small").textContent = displayName;
         card.setAttribute("aria-label", `Select ${displayName}`);
+    };
+
+    const getStoryGenerator = () => {
+        if (!storyGeneratorPromise) {
+            storyGeneratorPromise = (async () => {
+                const { pipeline } = await import("https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.7.2");
+                return pipeline("text-generation", "onnx-community/Qwen2.5-0.5B-Instruct", {
+                    progress_callback: (progress) => {
+                        if (progress.status === "progress" && Number.isFinite(progress.progress)) {
+                            modelStatus.textContent = `Downloading the story model: ${Math.round(progress.progress)}%`;
+                        }
+                    }
+                });
+            })().catch((error) => {
+                storyGeneratorPromise = undefined;
+                throw error;
+            });
+        }
+        return storyGeneratorPromise;
+    };
+
+    const cleanGeneratedText = (value) =>
+        value.replace(/[*_`]/g, "").replace(/\s+/g, " ").trim();
+
+    const parseGeneratedPanels = (value) => {
+        const complete = (panels) => ({
+            panels: panels.map((panel) => ({
+                text: cleanGeneratedText(panel.text),
+                dialogue: cleanGeneratedText(panel.dialogue)
+            })),
+            needsReview: false
+        });
+        const jsonStart = value.indexOf("{");
+        const jsonEnd = value.lastIndexOf("}");
+        if (jsonStart >= 0 && jsonEnd > jsonStart) {
+            try {
+                const parsed = JSON.parse(value.slice(jsonStart, jsonEnd + 1));
+                const panels = parsed.panels || parsed.scenes || parsed.comics?.[0]?.scenes;
+                if (Array.isArray(panels) && panels.length >= 4) {
+                    const separateDialogue = parsed.dialogue || parsed.dialogues || parsed.comics?.[0]?.dialogue;
+                    const structured = panels.slice(0, 4).map((panel, index) => ({
+                        text: cleanGeneratedText(String(typeof panel === "string" ? panel : panel && (panel.scene || panel.text || panel.caption) || "")),
+                        dialogue: cleanGeneratedText(String(panel && typeof panel === "object" ? panel.dialogue || panel.speech || "" : separateDialogue?.[index] || ""))
+                    }));
+                    if (structured.every((panel) => panel.text && panel.dialogue)) {
+                        return complete(structured);
+                    }
+                }
+            } catch {
+                // Some small models wrap otherwise useful output in invalid JSON.
+            }
+        }
+
+        const lines = value.replace(/\*\*/g, "").split(/\r?\n/);
+        const scenes = [];
+        const dialogueLines = [];
+        const quotedLines = [];
+        for (const line of lines) {
+            const sceneMatch = line.match(/^\s*(?:(?:\d+[.)]\s*)?[-*]\s*)?Scene\s*:\s*(.+)$/i);
+            if (sceneMatch) {
+                scenes.push(cleanGeneratedText(sceneMatch[1]));
+                continue;
+            }
+
+            const dialogueMatch = line.match(/^\s*(?:(?:\d+[.)]\s*)?[-*]\s*)?(?:Dialogue|Speech)\s*:\s*(.+)$/i);
+            if (dialogueMatch && !/^spoken by\b/i.test(dialogueMatch[1].trim())) {
+                const quote = dialogueMatch[1].match(/["“]([^"”]+)["”]/);
+                dialogueLines.push(cleanGeneratedText(quote ? quote[1] : dialogueMatch[1]));
+            }
+            const quoteMatches = line.matchAll(/["“]([^"”]+)["”]/g);
+            for (const quote of quoteMatches) {
+                quotedLines.push(cleanGeneratedText(quote[1]));
+            }
+        }
+
+        const effectiveDialogues = dialogueLines.length >= 4 ? dialogueLines : quotedLines;
+        if (scenes.length >= 4 && effectiveDialogues.length >= 4) {
+            return complete(scenes.slice(0, 4).map((text, index) => ({
+                text,
+                dialogue: effectiveDialogues[index]
+            })));
+        }
+
+        const numberedPanels = new Map();
+        const numberedDialogues = new Map();
+        for (const line of lines) {
+            const panelMatch = line.match(/^\s*(?:[-*]\s*)?(?:Panel|Scene)\s*([1-4])\s*[:.)-]\s*(.+)$/i);
+            const dialogueMatch = line.match(/^\s*(?:[-*]\s*)?(?:Dialogue|Speech|Line)\s*([1-4])\s*[:.)-]\s*(.+)$/i);
+            if (panelMatch) {
+                numberedPanels.set(Number(panelMatch[1]), cleanGeneratedText(panelMatch[2]));
+            }
+            if (dialogueMatch) {
+                const quote = dialogueMatch[2].match(/["“]([^"”]+)["”]/);
+                numberedDialogues.set(Number(dialogueMatch[1]), cleanGeneratedText(quote ? quote[1] : dialogueMatch[2]));
+            }
+        }
+
+        if (numberedPanels.size >= 4 && quotedLines.length >= 4) {
+            return complete([1, 2, 3, 4].map((number, index) => ({
+                text: numberedPanels.get(number),
+                dialogue: quotedLines[index]
+            })));
+        }
+
+        if ([1, 2, 3, 4].every((number) => numberedPanels.has(number) && numberedDialogues.has(number))) {
+            return complete([1, 2, 3, 4].map((number) => ({
+                text: numberedPanels.get(number),
+                dialogue: numberedDialogues.get(number)
+            })));
+        }
+
+        const cleanLines = lines
+            .map((line) => cleanGeneratedText(line
+                .replace(/^\s*(?:[-*]\s*)?(?:\d+[.)]\s*)?/, "")
+                .replace(/^(?:Scene|Dialogue|Speech)\s*:\s*/i, "")))
+            .filter((line) => line.length > 12 && !/^(?:sure|here(?:'s| is| are)|title:|scene:|dialogue:)\b/i.test(line));
+        const sentenceParts = cleanLines
+            .flatMap((line) => line.match(/[^.!?]+[.!?]?/g) || [])
+            .map(cleanGeneratedText)
+            .filter((part) => part.length > 12 && !/^(?:sure|here(?:'s| is| are)|this dialogue could|this comic)\b/i.test(part));
+        const sourceText = sentenceParts.length ? sentenceParts.join(" ") : value;
+        const words = cleanGeneratedText(sourceText).split(/\s+/);
+        const chunkSize = Math.max(1, Math.ceil(words.length / 4));
+        const roughPanels = [0, 1, 2, 3].map((index) => {
+            const text = scenes[index] || sentenceParts[index] || words.slice(index * chunkSize, (index + 1) * chunkSize).join(" ");
+            const dialogue = dialogueLines[index] || quotedLines[index] || sentenceParts[index + 4] || text;
+            return { text, dialogue };
+        });
+        return {
+            panels: roughPanels.map((panel) => ({
+                text: cleanGeneratedText(panel.text).split(/\s+/).slice(0, 24).join(" "),
+                dialogue: cleanGeneratedText(panel.dialogue).split(/\s+/).slice(0, 18).join(" ")
+            })),
+            needsReview: true
+        };
     };
 
     selectCharacter(selectedCharacterId);
@@ -113,7 +252,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-    form.addEventListener("submit", (event) => {
+    form.addEventListener("submit", async (event) => {
         event.preventDefault();
         const idea = promptInput.value.trim();
 
@@ -124,50 +263,80 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         const name = characterName.value.trim() || "Your hero";
-        const description = characterDescription.value.trim();
-        const scenes = [
-            {
-                title: "The beginning",
-                text: idea
-            },
-            {
-                title: "Meet the hero",
-                text: description ? `${name} is ${description}` : `${name} steps into a world of possibility.`
-            },
-            {
-                title: "Plot twist",
-                text: "An unexpected turn makes this adventure one to remember."
-            },
-            {
-                title: "To be continued",
-                text: "And this is only the beginning."
+        const description = characterDescription.value.trim() || "a curious, brave adventurer";
+        const prompt = `Write a fun four-panel ${selectedStyle} comic. Story: ${idea}. Main character: ${name}, ${description}. Keep the same story setting and events. Give each panel one short visual scene and one short line of spoken dialogue. Keep the whole comic concise.`;
+
+        generateButton.disabled = true;
+        generateButtonLabel.textContent = "Loading story model...";
+        modelStatus.classList.remove("error");
+        modelStatus.hidden = false;
+        modelStatus.textContent = "Loading the free, in-browser story model. Its first download can take a little while.";
+
+        try {
+            await new Promise((resolve) => requestAnimationFrame(resolve));
+            const generator = await getStoryGenerator();
+            modelStatus.textContent = "Writing your panels and dialogue on this device...";
+            generateButtonLabel.textContent = "Writing your comic...";
+            const output = await generator([
+                {
+                    role: "system",
+                    content: "Write short, age-appropriate comic scripts. Include four panels, each with one scene and one line of dialogue. Use a Scene: line and a Dialogue: line for every panel. Keep the story facts and setting provided by the user."
+                },
+                {
+                    role: "user",
+                    content: prompt
+                }
+            ], { max_new_tokens: 320, do_sample: false });
+            const generatedOutput = output[0]?.generated_text;
+            const generatedText = Array.isArray(generatedOutput)
+                ? generatedOutput.at(-1)?.content
+                : generatedOutput;
+            if (typeof generatedText !== "string" || !generatedText.trim()) {
+                throw new Error("The story model returned an empty response.");
             }
-        ];
+            const draft = parseGeneratedPanels(generatedText);
+            if (draft.panels.some((scene) => !scene.text || !scene.dialogue)) {
+                throw new Error("The model returned an incomplete panel. Please try again.");
+            }
 
-        grid.replaceChildren();
-        scenes.forEach((scene, index) => {
-            const panel = document.createElement("article");
-            panel.className = "comic-panel";
+            grid.replaceChildren();
+            draft.panels.forEach((scene, index) => {
+                const panel = document.createElement("article");
+                panel.className = "comic-panel";
 
-            const artwork = document.createElement("div");
-            artwork.className = `panel-art panel-${index + 1}`;
+                const artwork = document.createElement("div");
+                artwork.className = `panel-art panel-${index + 1}`;
 
-            const illustration = document.createElement("img");
-            illustration.src = avatarURL(`ComicPanel-${selectedStyle}-${index + 1}`, "d7e8fa");
-            illustration.alt = `${name}, panel ${index + 1}`;
-            illustration.loading = "lazy";
-            artwork.append(illustration);
+                const illustration = document.createElement("img");
+                illustration.src = avatarURL(`ComicPanel-${selectedStyle}-${index + 1}`, "d7e8fa");
+                illustration.alt = `${name}, panel ${index + 1}`;
+                illustration.loading = "lazy";
+                artwork.append(illustration);
 
-            const caption = document.createElement("p");
-            const heading = document.createElement("strong");
-            heading.textContent = `Panel ${index + 1} · ${scene.title}`;
-            caption.append(heading, document.createTextNode(scene.text));
-            panel.append(artwork, caption);
-            grid.append(panel);
-        });
+                const caption = document.createElement("p");
+                const heading = document.createElement("strong");
+                heading.textContent = `Panel ${index + 1}`;
+                const dialogue = document.createElement("span");
+                dialogue.className = "speech-dialogue";
+                dialogue.textContent = `“${scene.dialogue.replace(/^["“]|["”]$/g, "")}”`;
+                caption.append(heading, document.createTextNode(scene.text), dialogue);
+                panel.append(artwork, caption);
+                grid.append(panel);
+            });
 
-        resultStyle.textContent = selectedStyle;
-        result.hidden = false;
-        result.scrollIntoView({ behavior: "smooth", block: "start" });
+            resultStyle.textContent = selectedStyle;
+            result.hidden = false;
+            modelStatus.textContent = draft.needsReview
+                ? "The model returned an unstructured draft, so it was split into panels. Please review the story and dialogue."
+                : "Your comic panels were created with an in-browser AI model. Review the draft before sharing.";
+            result.scrollIntoView({ behavior: "smooth", block: "start" });
+        } catch (error) {
+            console.error("Comic story generation failed:", error);
+            modelStatus.classList.add("error");
+            modelStatus.textContent = `Could not create the comic: ${error.message} Check your internet connection and try again.`;
+        } finally {
+            generateButton.disabled = false;
+            generateButtonLabel.textContent = "Create my comic";
+        }
     });
 });
