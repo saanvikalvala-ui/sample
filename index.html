@@ -3,89 +3,124 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ComicAI Studio</title>
+    <meta name="theme-color" content="#fff7e8">
+    <meta name="description" content="Create amazing comics with ComicAI. Choose your style and start your adventure.">
+    <title>ComicAI — choose your adventure</title>
     <link rel="stylesheet" href="style.css">
+    <script src="java_script_part.javascrapt" defer></script>
 </head>
 <body>
-
-    <!-- Navbar -->
-    <header class="navbar">
-        <div class="logo">ComicAI</div>
-
-        <nav>
-            #Home</a>
-            #Gallery</a>
-            #About</a>
+    <header class="site-header">
+        <a class="brand" href="#top" aria-label="ComicAI home">Comic<span>AI</span><i aria-hidden="true">✦</i></a>
+        <nav class="main-nav" aria-label="Main navigation">
+            <a class="active" href="#top" aria-current="page">Home</a>
+            <a href="#studio">Gallery</a>
+            <a href="#about">About</a>
         </nav>
+        <a class="profile-link" href="#studio" aria-label="Go to your comic studio"><span aria-hidden="true">●</span></a>
     </header>
 
-    <!-- Hero Section -->
-    <section class="hero">
-        <h1>Create Comics with AI</h1>
-        <p>Turn simple ideas into fully illustrated comic strips.</p>
-    </section>
+    <main id="top">
+        <form id="comicForm">
+            <section class="hero" id="about">
+                <div class="hero-art">
+                    <div class="hero-illustration">
+                        <img class="hero-character" src="https://images.unsplash.com/photo-1578632767115-351597cf2477?auto=format&amp;fit=crop&amp;w=1000&amp;q=85" alt="Anime character illustration">
+                        <div class="image-sticker">Create amazing comics<br>with the power of AI! <span aria-hidden="true">✦</span></div>
+                        <div class="story-sticker">YOUR STORY.<br>YOUR STYLE.</div>
+                        <span class="doodle doodle-one" aria-hidden="true">✦</span>
+                        <span class="doodle doodle-two" aria-hidden="true">〰</span>
+                    </div>
+                </div>
 
-    <!-- Comic Creator -->
-    <section class="creator-box">
-        <h2>Create Your Comic</h2>
+                <div class="hero-content">
+                    <div class="headline-doodle" aria-hidden="true">✳</div>
+                    <h1><span>CHOOSE YOUR</span><span class="pink-word">ADVENTURE</span></h1>
+                    <div class="headline-underline" aria-hidden="true"></div>
+                    <p class="style-question">What kind of comic do you want to create?</p>
+                    <div class="style-grid" role="group" aria-label="Choose a comic art style">
+                        <button class="style-option selected style-comicbook" type="button" data-style="Comic Book" aria-pressed="true">
+                            <span class="style-art"><img src="https://api.dicebear.com/9.x/avataaars/svg?seed=ComicBookHero&amp;backgroundColor=92d2ff" alt=""></span>
+                            <span class="style-name">Comic Book</span><span class="style-check" aria-hidden="true">✓</span>
+                        </button>
+                        <button class="style-option style-manga" type="button" data-style="Manga" aria-pressed="false">
+                            <span class="style-art"><img src="https://api.dicebear.com/9.x/avataaars/svg?seed=Ren&amp;backgroundColor=d8dce3" alt=""></span>
+                            <span class="style-name">Manga</span><span class="style-check" aria-hidden="true">✓</span>
+                        </button>
+                        <button class="style-option style-cartoon" type="button" data-style="Cartoon" aria-pressed="false">
+                            <span class="style-art"><img src="https://api.dicebear.com/9.x/avataaars/svg?seed=SunnyPup&amp;backgroundColor=ffd36a" alt=""></span>
+                            <span class="style-name">Cartoon</span><span class="style-check" aria-hidden="true">✓</span>
+                        </button>
+                        <button class="style-option style-superhero" type="button" data-style="Superhero" aria-pressed="false">
+                            <span class="style-art"><img src="https://api.dicebear.com/9.x/avataaars/svg?seed=SkyCaptain&amp;backgroundColor=ffad8f" alt=""></span>
+                            <span class="style-name">Superhero</span><span class="style-check" aria-hidden="true">✓</span>
+                        </button>
+                        <button class="style-option style-scifi" type="button" data-style="Sci-Fi" aria-pressed="false">
+                            <span class="style-art"><img src="https://api.dicebear.com/9.x/avataaars/svg?seed=GalaxyExplorer&amp;backgroundColor=c7b8f3" alt=""></span>
+                            <span class="style-name">Sci-Fi</span><span class="style-check" aria-hidden="true">✓</span>
+                        </button>
+                    </div>
+                </div>
+            </section>
 
-        <textarea
-            id="promptInput"
-            placeholder="Example: A robot discovers magic in a futuristic city..."
-        ></textarea>
+            <section class="studio-section" id="studio">
+                <div class="character-card">
+                    <div class="card-title"><span class="title-spark" aria-hidden="true">✦</span><div><h2>Set up your characters</h2><p>Every great adventure needs a hero.</p></div></div>
+                    <div class="character-gallery" id="characterGallery" role="group" aria-label="Choose or add a character">
+                        <button class="character-tile add-tile" id="addCharacter" type="button"><span>＋</span><small>Add new</small></button>
+                        <button class="character-tile portrait portrait-one selected" type="button" data-character-id="mia" aria-pressed="true" aria-label="Select Mia">
+                            <img src="https://api.dicebear.com/9.x/avataaars/svg?seed=Mia&amp;backgroundColor=ffe1a4" alt=""><small>Mia</small>
+                        </button>
+                        <button class="character-tile portrait portrait-two" type="button" data-character-id="kai" aria-pressed="false" aria-label="Select Kai">
+                            <img src="https://api.dicebear.com/9.x/avataaars/svg?seed=Kai&amp;backgroundColor=cde0dc" alt=""><small>Kai</small>
+                        </button>
+                        <button class="character-tile portrait portrait-three" type="button" data-character-id="luna" aria-pressed="false" aria-label="Select Luna">
+                            <img src="https://api.dicebear.com/9.x/avataaars/svg?seed=Luna&amp;backgroundColor=ffd5dc" alt=""><small>Luna</small>
+                        </button>
+                        <button class="character-tile portrait portrait-four" type="button" data-character-id="rin" aria-pressed="false" aria-label="Select Rin">
+                            <img src="https://api.dicebear.com/9.x/avataaars/svg?seed=Rin&amp;backgroundColor=d5d6e8" alt=""><small>Rin</small>
+                        </button>
+                    </div>
+                    <div class="character-fields">
+                        <div class="character-field">
+                            <label for="characterName">Character name <span>OPTIONAL</span></label>
+                            <input id="characterName" name="characterName" type="text" maxlength="32" placeholder="e.g. Captain Comet">
+                        </div>
+                        <div class="character-field">
+                            <label for="characterDescription">Describe your character <span>OPTIONAL</span></label>
+                            <textarea id="characterDescription" name="characterDescription" rows="2" maxlength="180" placeholder="A brave hero with a big imagination..."></textarea>
+                        </div>
+                    </div>
+                </div>
 
-        <div class="controls">
-            <select id="styleSelect">
-                <option>Comic Book</option>
-                <option>Manga</option>
-                <option>Cartoon</option>
-                <option>Superhero</option>
-                <option>Sci-Fi</option>
-            </select>
+                <div class="story-card">
+                    <div class="card-title"><span class="title-spark story-spark" aria-hidden="true">✦</span><div><h2>Write your story</h2><p>Where will your imagination take us?</p></div></div>
+                    <label class="visually-hidden" for="storyPrompt">Your comic story</label>
+                    <textarea id="storyPrompt" name="storyPrompt" rows="4" maxlength="300" required placeholder="A young hero discovers a secret door to another world..."></textarea>
+                    <div class="field-foot"><span>Just start with an idea. We’ll take it from there.</span><span id="characterCount">0 / 300</span></div>
+                    <div class="create-row">
+                        <button class="create-button" type="submit"><span>Create my comic</span><span aria-hidden="true">➜</span></button>
+                        <span class="button-spark button-spark-left" aria-hidden="true">✦</span>
+                        <span class="button-spark button-spark-right" aria-hidden="true">〰</span>
+                    </div>
+                </div>
+            </section>
+        </form>
 
-            <select id="panelCount">
-                <option value="4">4 Panels</option>
-                <option value="6">6 Panels</option>
-                <option value="8">8 Panels</option>
-            </select>
-        </div>
+        <section id="comicResult" class="result-section" aria-live="polite" hidden>
+            <div class="result-heading">
+                <div><div class="eyebrow"><span aria-hidden="true">✦</span> FRESH OFF THE PRESS</div><h2>Your story, in panels.</h2></div>
+                <span class="result-style" id="resultStyle"></span>
+            </div>
+            <div class="comic-grid" id="comicGrid"></div>
+            <p class="preview-note">This is your story preview. Connect an image-generation service to bring each panel to life.</p>
+        </section>
+    </main>
 
-        <label class="learning-mode">
-            <input type="checkbox">
-            Educational Comic Mode
-        </label>
-
-        <button id="generateBtn">Generate Comic</button>
-    </section>
-
-    <!-- Character Builder -->
-    <section class="character-builder">
-        <h2>Main Character</h2>
-
-        <input
-            type="text"
-            id="characterName"
-            placeholder="Character Name">
-
-        <textarea
-            id="characterDescription"
-            placeholder="Describe your character..."
-        ></textarea>
-    </section>
-
-    <!-- Comic Output -->
-    <section id="comicSection">
-        <h2>Your Comic</h2>
-
-        <div class="comic-grid"></div>
-    </section>
-
-    <!-- Download Buttons -->
-    <section class="download-section">
-        <button>Download PNG</button>
-        <button>Download PDF</button>
-        <button>Share Comic</button>
-    </section>
-
-    <!-- Community Section -->
-    <section class="community">
+    <footer class="site-footer">
+        <a class="brand" href="#top">Comic<span>AI</span><i aria-hidden="true">✦</i></a>
+        <p>Your story. Your style. Your adventure.</p>
+        <a href="#top">Back to top ↑</a>
+    </footer>
+</body>
+</html>
