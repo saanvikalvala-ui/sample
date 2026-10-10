@@ -1,0 +1,173 @@
+document.addEventListener("DOMContentLoaded", () => {
+    const form = document.getElementById("comicForm");
+    const promptInput = document.getElementById("storyPrompt");
+    const characterName = document.getElementById("characterName");
+    const characterDescription = document.getElementById("characterDescription");
+    const count = document.getElementById("characterCount");
+    const result = document.getElementById("comicResult");
+    const grid = document.getElementById("comicGrid");
+    const resultStyle = document.getElementById("resultStyle");
+    const styleOptions = [...document.querySelectorAll(".style-option")];
+    const characterGallery = document.getElementById("characterGallery");
+    const addCharacterButton = document.getElementById("addCharacter");
+    const characters = new Map([
+        ["mia", { name: "Mia", description: "A curious comic-book adventurer", seed: "Mia" }],
+        ["kai", { name: "Kai", description: "A clever hero with a secret power", seed: "Kai" }],
+        ["luna", { name: "Luna", description: "A daydreamer who loves exploring", seed: "Luna" }],
+        ["rin", { name: "Rin", description: "A fearless traveler from another world", seed: "Rin" }]
+    ]);
+    let selectedStyle = "Comic Book";
+    let selectedCharacterId = "mia";
+    let newCharacterNumber = 0;
+
+    const avatarURL = (seed, backgroundColor = "c0dffc") =>
+        `https://api.dicebear.com/9.x/avataaars/svg?seed=${encodeURIComponent(seed)}&backgroundColor=${backgroundColor}`;
+
+    const selectCharacter = (id) => {
+        const character = characters.get(id);
+        if (!character) {
+            return;
+        }
+
+        selectedCharacterId = id;
+        characterGallery.querySelectorAll(".portrait").forEach((card) => {
+            const isSelected = card.dataset.characterId === id;
+            card.classList.toggle("selected", isSelected);
+            card.setAttribute("aria-pressed", String(isSelected));
+        });
+        characterName.value = character.name;
+        characterDescription.value = character.description;
+    };
+
+    const updateSelectedCharacter = () => {
+        const character = characters.get(selectedCharacterId);
+        const card = characterGallery.querySelector(`[data-character-id="${CSS.escape(selectedCharacterId)}"]`);
+        if (!character || !card) {
+            return;
+        }
+        const displayName = character.name.trim() || "New hero";
+        card.querySelector("small").textContent = displayName;
+        card.setAttribute("aria-label", `Select ${displayName}`);
+    };
+
+    selectCharacter(selectedCharacterId);
+
+    characterGallery.addEventListener("click", (event) => {
+        const card = event.target.closest(".portrait");
+        if (card && characterGallery.contains(card)) {
+            selectCharacter(card.dataset.characterId);
+        }
+    });
+
+    addCharacterButton.addEventListener("click", () => {
+        newCharacterNumber += 1;
+        const id = `new-${newCharacterNumber}`;
+        const character = {
+            name: `Character ${newCharacterNumber}`,
+            description: "",
+            seed: `NewHero${newCharacterNumber}`
+        };
+        characters.set(id, character);
+
+        const card = document.createElement("button");
+        card.className = "character-tile portrait portrait-dynamic";
+        card.type = "button";
+        card.dataset.characterId = id;
+        card.setAttribute("aria-pressed", "false");
+        card.setAttribute("aria-label", `Select ${character.name}`);
+
+        const image = document.createElement("img");
+        image.src = avatarURL(character.seed, "d5d6e8");
+        image.alt = "";
+        const label = document.createElement("small");
+        label.textContent = character.name;
+        card.append(image, label);
+        characterGallery.append(card);
+        selectCharacter(id);
+        characterName.focus();
+    });
+
+    characterName.addEventListener("input", () => {
+        const character = characters.get(selectedCharacterId);
+        character.name = characterName.value;
+        updateSelectedCharacter();
+    });
+
+    characterDescription.addEventListener("input", () => {
+        characters.get(selectedCharacterId).description = characterDescription.value;
+    });
+
+    promptInput.addEventListener("input", () => {
+        count.textContent = `${promptInput.value.length} / 300`;
+        promptInput.setCustomValidity("");
+    });
+
+    styleOptions.forEach((option) => {
+        option.addEventListener("click", () => {
+            selectedStyle = option.dataset.style;
+            styleOptions.forEach((item) => {
+                const isSelected = item === option;
+                item.classList.toggle("selected", isSelected);
+                item.setAttribute("aria-pressed", String(isSelected));
+            });
+        });
+    });
+
+    form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const idea = promptInput.value.trim();
+
+        if (!idea) {
+            promptInput.setCustomValidity("Add a story idea to create your comic preview.");
+            promptInput.reportValidity();
+            return;
+        }
+
+        const name = characterName.value.trim() || "Your hero";
+        const description = characterDescription.value.trim();
+        const scenes = [
+            {
+                title: "The beginning",
+                text: idea
+            },
+            {
+                title: "Meet the hero",
+                text: description ? `${name} is ${description}` : `${name} steps into a world of possibility.`
+            },
+            {
+                title: "Plot twist",
+                text: "An unexpected turn makes this adventure one to remember."
+            },
+            {
+                title: "To be continued",
+                text: "And this is only the beginning."
+            }
+        ];
+
+        grid.replaceChildren();
+        scenes.forEach((scene, index) => {
+            const panel = document.createElement("article");
+            panel.className = "comic-panel";
+
+            const artwork = document.createElement("div");
+            artwork.className = `panel-art panel-${index + 1}`;
+
+            const illustration = document.createElement("img");
+            illustration.src = avatarURL(`ComicPanel-${selectedStyle}-${index + 1}`, "d7e8fa");
+            illustration.alt = `${name}, panel ${index + 1}`;
+            illustration.loading = "lazy";
+            artwork.append(illustration);
+
+            const caption = document.createElement("p");
+            const heading = document.createElement("strong");
+            heading.textContent = `Panel ${index + 1} · ${scene.title}`;
+            caption.append(heading, document.createTextNode(scene.text));
+            panel.append(artwork, caption);
+            grid.append(panel);
+        });
+
+        resultStyle.textContent = selectedStyle;
+        result.hidden = false;
+        result.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+});
